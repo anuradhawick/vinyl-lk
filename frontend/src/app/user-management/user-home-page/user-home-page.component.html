@@ -1,0 +1,66 @@
+@if (user | async; as currentUser) {
+  <div class="w-full">
+    <div class="flex w-full justify-center pt-4 lg:h-[150px] lg:pt-0">
+      <div
+        class="flex size-36 items-center justify-center overflow-hidden rounded-full border-2 border-black bg-slate-100 shadow-lg ring-4 ring-slate-50 lg:size-[300px] lg:-translate-y-[150px]"
+      >
+        <img
+          [src]="currentUser.picture || '../../../assets/images/profile.png'"
+          alt="Profile picture"
+          class="h-full w-full object-cover"
+        />
+      </div>
+    </div>
+    <div class="w-full text-center">
+      <h3 class="font-semibold">{{ currentUser.name }}</h3>
+      <h6 class="font-medium">{{ currentUser.email }}</h6>
+    </div>
+  </div>
+}
+<div class="flex space-x-5 justify-center">
+  <div class="flex md:hidden">
+    <a mat-button class="flex md:hidden" (click)="scroll('left')"
+      ><mat-icon>chevron_left</mat-icon></a
+    >
+  </div>
+  <div
+    #hscroll
+    class="flex space-x-5 overflow-x-auto overflow-y-hidden justify-between"
+  >
+    <a
+      mat-button
+      class="text-black hover:decoration-transparent font-semibold"
+      [routerLink]="'records'"
+    >
+      Records</a
+    >
+    <a
+      mat-button
+      class="text-black hover:decoration-transparent font-semibold"
+      [routerLink]="'forum'"
+      >Forum
+    </a>
+    <a
+      mat-button
+      class="text-black hover:decoration-transparent font-semibold"
+      [routerLink]="'market'"
+    >
+      Marketplace</a
+    >
+    <a
+      mat-button
+      class="text-black hover:decoration-transparent font-semibold"
+      [routerLink]="'./'"
+    >
+      Profile</a
+    >
+  </div>
+  <div class="flex md:hidden">
+    <a mat-button (click)="scroll('right')"
+      ><mat-icon>chevron_right</mat-icon></a
+    >
+  </div>
+</div>
+<div class="m-3 overflow-y-auto">
+  <router-outlet></router-outlet>
+</div>

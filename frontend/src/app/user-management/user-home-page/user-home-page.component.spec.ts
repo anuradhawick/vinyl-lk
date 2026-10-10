@@ -1,0 +1,24 @@
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { UserHomePageComponent } from './user-home-page.component';
+
+describe('UserHomePageComponent', () => {
+  let component: UserHomePageComponent;
+  let fixture: ComponentFixture<UserHomePageComponent>;
+
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      imports: [UserHomePageComponent],
+    }).compileComponents();
+  }));
+
+  beforeEach(() => {
+    fixture = TestBed.createComponent(UserHomePageComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});

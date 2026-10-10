@@ -1,0 +1,37 @@
+<div>
+  @if (is_reply) {
+    <div class="">
+      <h3>Add your Comment</h3>
+    </div>
+  }
+  <div class="input-group">
+    @if (!is_reply) {
+      <div class="input-group-prepend">
+        <div class="input-group-text">
+          <i class="material-icons">text_fields</i>
+        </div>
+      </div>
+    }
+    @if (!is_reply) {
+      <input
+        aria-required="true"
+        name="forum-editor-title"
+        [(ngModel)]="title"
+        (ngModelChange)="titleChange.emit($event)"
+        class="form-control"
+        aria-label="With textarea"
+        [disabled]="editorDisabled"
+        required
+      />
+    }
+  </div>
+  <hr />
+  <ckeditor
+    name="forum-editor-data"
+    [editor]="Editor"
+    [(ngModel)]="data"
+    (ready)="onReady($event)"
+    [disabled]="editorDisabled"
+    (ngModelChange)="dataChange.emit($event)"
+  ></ckeditor>
+</div>

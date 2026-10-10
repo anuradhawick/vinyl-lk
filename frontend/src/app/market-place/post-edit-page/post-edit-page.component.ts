@@ -1,0 +1,82 @@
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { MarketService } from '../services/market.service';
+import { AuthService } from '../../shared/services/auth.service';
+import { MatDialog } from '@angular/material/dialog';
+import { LoaderComponent } from '../../shared/components/loader/loader.component';
+import { PostEditorComponent } from '../post-editor-module/post-editor.component';
+import { ToastrService } from 'ngx-toastr';
+import * as _ from 'lodash';
+import { MatButton } from '@angular/material/button';
+
+@Component({
+  selector: 'app-post-edit-page',
+  templateUrl: './post-edit-page.component.html',
+  styleUrls: ['./post-edit-page.component.css'],
+  imports: [LoaderComponent, PostEditorComponent, MatButton, RouterLink],
+})
+export class PostEditPageComponent implements OnInit {
+  @ViewChild('editor', { static: false }) editor!: PostEditorComponent;
+  @ViewChild('loader', { static: false }) loader!: LoaderComponent;
+  public postObject: any = null;
+  public _ = _;
+
+  // context control
+  public postLoading = true;
+  ready = true;
+
+  constructor(
+    public route: ActivatedRoute,
+    private marketService: MarketService,
+    public auth: AuthService,
+    private toastr: ToastrService,
+    private router: Router,
+    public dialog: MatDialog,
+  ) {}
+
+  ngOnInit() {
+    this.route.paramMap.subscribe((map: any) => {
+      const postId = _.get(map, 'params.postId', null);
+      firstValueFrom(this.marketService.fetch_post(postId)).then((data) => {
+        this.postObject = data;
+      });
+    });
+  }
+
+  readyChange(event: any) {
+    this.ready = event;
+  }
+
+  save() {
+    const post = this.editor.getReleaseData();
+
+    if (post) {
+      this.postObject = null;
+      this.loader.show();
+      this.ready = false;
+
+      const data = firstValueFrom(this.marketService.update_post(post));
+
+      data.then(
+        (result: any) => {
+          if (result.id) {
+            this.toastr.success(`Records saved successfully`, 'Success');
+            this.router.navigate(['/market', result.id, 'view']);
+          } else {
+            this.ready = true;
+            this.loader.hide();
+          }
+        },
+        () => {
+          this.ready = true;
+          this.loader.hide();
+          this.toastr.error(
+            `Unable to save the records. Try again later`,
+            'Error',
+          );
+        },
+      );
+    }
+  }
+}

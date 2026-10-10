@@ -1,0 +1,24 @@
+<h1 mat-dialog-title>{{ data.title }}</h1>
+<div mat-dialog-content>
+  <mat-chip-listbox multiple>
+    @for (c of data.all; track c; let i = $index) {
+      <mat-chip-option [selected]="isSelected(c)" (click)="toggleFilter(c)"
+        >{{ c }}
+      </mat-chip-option>
+    }
+  </mat-chip-listbox>
+</div>
+<br />
+<div mat-dialog-actions>
+  <button mat-raised-button type="button" (click)="done([], false)">
+    Cancel
+  </button>
+  <button
+    mat-raised-button
+    type="button"
+    color="primary"
+    (click)="done(selected, true)"
+  >
+    Done
+  </button>
+</div>

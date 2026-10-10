@@ -1,0 +1,293 @@
+<app-loader [hidden]="!recordLoading()"></app-loader>
+@if (recordObject(); as recordObject) {
+  <div class="flex flex-col md:flex-row">
+    <!--LEFT COL-->
+    <div class="w-full md:w-1/3">
+      <div class="m-2">
+        <app-image-viewer
+          [config]="imgvconfig"
+          [src]="
+            (_.isEmpty(recordObject.images) && [
+              '/assets/images/records-new-sample.svg',
+            ]) ||
+            recordObject.images
+          "
+          [(index)]="recordObject.chosenImage"
+        >
+        </app-image-viewer>
+        <mat-card>
+          <mat-card-content>
+            <h6>Genres</h6>
+            <div>
+              <mat-chip-listbox>
+                @for (s of recordObject.genres; track $index) {
+                  <mat-chip highlighted color="primary">{{ s }}</mat-chip>
+                }
+              </mat-chip-listbox>
+            </div>
+            <hr />
+            <h6>Styles</h6>
+            <div>
+              <mat-chip-listbox>
+                @for (s of recordObject.styles; track $index) {
+                  <mat-chip highlighted color="primary">{{ s }}</mat-chip>
+                }
+              </mat-chip-listbox>
+            </div>
+            <hr />
+            <h6>Descriptions</h6>
+            <div>
+              <mat-chip-listbox>
+                @for (s of recordObject.descriptions; track $index) {
+                  <mat-chip highlighted color="primary">{{ s }}</mat-chip>
+                }
+              </mat-chip-listbox>
+            </div>
+            <hr />
+            @if (!isRevisionView()) {
+              <h6>Revision history</h6>
+              <div>
+                <app-loader [hidden]="!histLoading()"></app-loader>
+                @for (h of recordHistory(); track $index) {
+                  <a
+                    mat-button
+                    [routerLink]="[
+                      '/records',
+                      recordObject.id,
+                      'revisions',
+                      h._id,
+                    ]"
+                    >Revision - {{ h.createdAt | date: "medium" }}</a
+                  >
+                }
+              </div>
+            }
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+    <!--END LEFT COL-->
+    <!--RIGHT COL-->
+    <div class="w-full md:w-2/3">
+      <div class="m-2">
+        <h2>{{ recordObject.name }}</h2>
+        <hr />
+        <mat-card>
+          <mat-card-content>
+            <h3>Release Information</h3>
+            <hr />
+            <div class="overflow-x-auto">
+              <table class="w-full border-separate border-spacing-y-3">
+                <tbody>
+                  <tr>
+                    <td class="min-w-[100px] w-1/3">Artist Name</td>
+                    <td class="min-w-[200px] w-2/3">
+                      <strong>
+                        {{ recordObject.mainArtist }}
+                      </strong>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Year</td>
+                    <td>
+                      <strong>
+                        {{ recordObject.date }}
+                      </strong>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <hr />
+            <div class="overflow-x-auto">
+              <table class="w-full border-separate border-spacing-y-3">
+                <tbody>
+                  <tr>
+                    <td class="min-w-[200px] w-1/3">
+                      Label - <strong>{{ recordObject.label }}</strong>
+                    </td>
+                    <td class="min-w-[200px] w-1/3">
+                      Catalog No -
+                      <strong>{{ recordObject.catalogNo }}</strong>
+                    </td>
+                    <td class="min-w-[200px] w-1/3">
+                      Country - <strong>{{ recordObject.country }}</strong>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <hr />
+            <div class="overflow-x-auto">
+              <table class="w-full border-separate border-spacing-y-3">
+                <tbody>
+                  <tr>
+                    <td class="min-w-[200px] w-1/4">
+                      Size - <strong>{{ recordObject.size }}</strong>
+                    </td>
+                    <td class="min-w-[200px] w-1/4">
+                      Speed - <strong>{{ recordObject.speed }}</strong>
+                    </td>
+                    <td class="min-w-[200px] w-1/4">
+                      Channels -
+                      <strong>{{ recordObject.channelCoding }}</strong>
+                    </td>
+                    <td class="min-w-[200px] w-1/4">
+                      Format - <strong>{{ recordObject.format }}</strong>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <hr />
+            <h3>Track List</h3>
+            <hr />
+            <div class="overflow-x-auto">
+              <table class="w-full border-separate border-spacing-y-3">
+                <thead>
+                  <tr>
+                    <th class="min-w-[100px]">Position</th>
+                    <th class="min-w-[300px]">Artists</th>
+                    <th class="min-w-[300px]">Title/Credits</th>
+                    <th class="min-w-[100px]">Duration</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (
+                    track of recordObject.tracks;
+                    track track;
+                    let ti = $index
+                  ) {
+                    <tr id="track-row-{{ ti }}">
+                      <th scope="row">
+                        {{ track.index }}
+                      </th>
+                      <td>
+                        @for (
+                          artist of track.artists;
+                          track artist;
+                          let i = $index
+                        ) {
+                          {{ artist.name }}
+                        }
+                      </td>
+                      <td>
+                        {{ track.title }}
+                        @if (!_.isEmpty(track.credits)) {
+                          <div class="text-sm">
+                            @for (
+                              credit of track.credits;
+                              track credit;
+                              let i = $index
+                            ) {
+                              <em>{{ credit.text }}</em>
+                            }
+                          </div>
+                        }
+                      </td>
+                      <td>
+                        {{ track.duration }}
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <hr />
+            <h3>Other Information</h3>
+            <hr />
+            <div class="overflow-x-auto">
+              <table class="w-full border-separate border-spacing-y-3">
+                <tbody>
+                  @if (!_.isEmpty(recordObject.commonCredits)) {
+                    <tr>
+                      <td class="min-w-[100px] w-1/3">Common credits</td>
+                      <td class="min-w-[200px] w-2/3">
+                        @for (
+                          credit of recordObject.commonCredits;
+                          track credit;
+                          let i = $index
+                        ) {
+                          <div>
+                            <strong>{{ credit.text }}</strong>
+                          </div>
+                        }
+                      </td>
+                    </tr>
+                  }
+                  <tr>
+                    <td class="min-w-[100px] w-1/3">Notes</td>
+                    <td class="min-w-[200px] w-2/3">
+                      <strong>
+                        <div style="white-space: pre-wrap">
+                          {{ recordObject.notes }}
+                        </div>
+                      </strong>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            @if (!_.isEmpty(recordObject.songUrls)) {
+              <hr />
+              <h3>Song links available</h3>
+              <hr />
+              <div class="flex flex-row flex-wrap space-x-1">
+                @for (url of recordObject.songUrls; track url; let i = $index) {
+                  <a
+                    mat-fab
+                    href="{{ url.text }}"
+                    target="_blank"
+                    color="primary"
+                    ><mat-icon>play_arrow</mat-icon>
+                  </a>
+                }
+              </div>
+            }
+            @if (isRevisionView()) {
+              <hr />
+              <table class="w-full border-separate border-spacing-y-3">
+                <tbody>
+                  @if (recordObject.reviser) {
+                    <tr>
+                      <td class="min-w-[100px] w-1/3">Revised by</td>
+                      <td class="min-w-[200px] w-2/3">
+                        <strong>
+                          <div style="white-space: pre-wrap">
+                            {{ recordObject.reviser.name || "Not available" }}
+                          </div>
+                        </strong>
+                      </td>
+                    </tr>
+                  }
+                  @if (recordObject.revisionComments) {
+                    <tr>
+                      <td class="min-w-[100px] w-1/3">Revision comments</td>
+                      <td class="min-w-[200px] w-2/3">
+                        <strong>
+                          <div style="white-space: pre-wrap">
+                            {{
+                              recordObject.revisionComments || "Not available"
+                            }}
+                          </div>
+                        </strong>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+          </mat-card-content>
+        </mat-card>
+        @if (auth.isLoggedIn && !isRevisionView) {
+          <hr />
+          <a mat-button [routerLink]="['/records', recordObject.id, 'edit']"
+            >Submit a revision</a
+          >
+        }
+      </div>
+    </div>
+    <!--END RIGHT COL-->
+  </div>
+}
+<br />

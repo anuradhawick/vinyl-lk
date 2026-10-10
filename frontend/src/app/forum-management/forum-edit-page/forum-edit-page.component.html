@@ -1,0 +1,39 @@
+<br />
+@if (loading) {
+  <app-loader [loading]="true"></app-loader>
+} @else {
+  <div class="w-full">
+    <div class="mx-4 md:mx-[60px]">
+      <app-forum-editor-component
+        [(imageProgress)]="imageProgress"
+        [(title)]="title"
+        [(data)]="data"
+        [editorDisabled]="editorDisabled"
+      ></app-forum-editor-component>
+      <hr />
+      <div class="flex flex-row gap-1">
+        <button
+          mat-raised-button
+          [disabled]="imageProgress > 0 || editorDisabled"
+          type="button"
+          (click)="discardPost()"
+        >
+          {{ newMode ? "Discard" : "Delete" }}
+        </button>
+        <button
+          mat-raised-button
+          color="primary"
+          type="button"
+          [disabled]="imageProgress > 0 || editorDisabled"
+          (click)="savePost()"
+        >
+          {{ newMode ? "Save" : "Update" }}
+        </button>
+        @if (imageProgress > 0 || editorDisabled) {
+          <mat-spinner class="!h-9 !w-10"></mat-spinner>
+        }
+      </div>
+    </div>
+  </div>
+}
+<br />

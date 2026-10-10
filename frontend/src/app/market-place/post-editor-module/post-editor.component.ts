@@ -1,0 +1,220 @@
+import {
+  Component,
+  EventEmitter,
+  Input,
+  NgZone,
+  OnInit,
+  Output,
+} from '@angular/core';
+import * as _ from 'lodash';
+import { AuthService } from '../../shared/services/auth.service';
+import { ToastrService } from 'ngx-toastr';
+import {
+  FormBuilder,
+  Validators,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
+import { environment } from '../../../environments/environment';
+import { uploadData } from 'aws-amplify/storage';
+import { v4 as uuid } from 'uuid';
+import { Observable } from 'rxjs';
+import { ImageViewerComponent } from '../../shared/components/image-viewer/image-viewer.component';
+import { MatButton } from '@angular/material/button';
+import { MatProgressBar } from '@angular/material/progress-bar';
+import { MatFormField, MatInput, MatError } from '@angular/material/input';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { MatSelect, MatOption } from '@angular/material/select';
+import { AsyncPipe } from '@angular/common';
+
+@Component({
+  selector: 'app-post-editor',
+  templateUrl: './post-editor.component.html',
+  styleUrls: ['./post-editor.component.css'],
+  imports: [
+    ImageViewerComponent,
+    MatButton,
+    MatProgressBar,
+    FormsModule,
+    ReactiveFormsModule,
+    MatFormField,
+    MatInput,
+    MatError,
+    MatCheckbox,
+    MatSelect,
+    MatOption,
+    AsyncPipe,
+  ],
+})
+export class PostEditorComponent implements OnInit {
+  @Output() readyStateChange = new EventEmitter<boolean>();
+  public _ = _;
+
+  @Output() postChange = new EventEmitter();
+
+  // current entry
+  public postObject: any = {
+    chosenImage: 0,
+    images: [],
+    name: '',
+    description: '',
+    currency: 'Rs',
+    price: 0,
+    saleType: null,
+    saleSubtype: null,
+    isNegotiable: false,
+  };
+
+  // passed as prop
+  @Input()
+  set post(record: any) {
+    if (!_.isEmpty(record)) {
+      _.assign(this.postObject, record);
+    }
+  }
+
+  // context control
+  public uploadCount = 0;
+  public percentages: any = [];
+
+  // image viewer config
+  public imgvconfig = {
+    zoomFactor: 0.1,
+    wheelZoom: true,
+    allowFullscreen: true,
+    allowKeyboardNavigation: true,
+    customBtns: [{ name: 'delete', icon: 'delete' }],
+    btnShow: {
+      next: true,
+      prev: true,
+      zoomIn: true,
+      zoomOut: true,
+    },
+  };
+
+  public form: any;
+
+  constructor(
+    private auth: AuthService,
+    public ngZone: NgZone,
+    private toastr: ToastrService,
+    private fb: FormBuilder,
+  ) {}
+
+  ngOnInit() {
+    this.form = this.fb.group({
+      name: [this.postObject.name, Validators.required],
+      description: [this.postObject.description, Validators.required],
+      currency: [this.postObject.currency, Validators.required],
+      price: [
+        this.postObject.price,
+        [Validators.required, Validators.pattern(/[0-9]+(\.[0-9]+)?/)],
+      ],
+      saleType: [this.postObject.saleType, Validators.required],
+      saleSubtype: [this.postObject.saleSubtype, Validators.required],
+      isNegotiable: [this.postObject.isNegotiable],
+    });
+    this.form.valueChanges.subscribe((values: any) => {
+      _.assign(this.postObject, values);
+    });
+  }
+
+  getReleaseData() {
+    if (this.form.invalid) {
+      Object.keys(this.form.controls).forEach((field) => {
+        const control = this.form.get(field);
+        control.markAsTouched({ onlySelf: true });
+      });
+      return false;
+    } else if (this.uploadCount > 0) {
+      this.toastr.warning(
+        `Images are still being uploaded. Please wait!`,
+        'Warning',
+      );
+      return false;
+    }
+    if (this.postObject.images.length < 2) {
+      this.toastr.warning(
+        `An advertisement must carry at least 2 images of the item!`,
+        'Warning',
+      );
+      return false;
+    }
+
+    return this.postObject;
+  }
+
+  addImage(event: any) {
+    if (!this.auth.isLoggedIn) {
+      this.toastr.warning('Please login before continue', 'Warning');
+      return;
+    }
+    if (this.postObject.images.length >= 10) {
+      this.toastr.warning(
+        'Maximum number of images supported is 10',
+        'Warning',
+      );
+    }
+    if (!_.isEmpty(event.target.files)) {
+      _.each(event.target.files, (file) => {
+        const filename = `${uuid()}.${file.name.split('.').pop() || ''}`;
+
+        this.uploadCount++;
+        this.readyStateChange.emit(false);
+
+        const progressObserver = new Observable<any>((observer) => {
+          uploadData({
+            key: `temp/${filename}`,
+            data: file,
+            options: {
+              onProgress: (progress: any) => {
+                observer.next(
+                  (progress.transferredBytes * 100) / progress.totalBytes,
+                );
+              },
+            },
+          })
+            .result.then(() => {
+              const url = `https://${environment.aws_config.Storage.S3.bucket}.s3-${environment.aws_config.Storage.S3.region}.amazonaws.com/temp/${filename}`;
+
+              this.postObject.images.push(url);
+              this.uploadCount--;
+              if (this.uploadCount === 0) {
+                this.readyStateChange.emit(true);
+              }
+              observer.complete();
+              _.remove(this.percentages, (p) => p === progressObserver);
+            })
+            .catch(() => {
+              this.toastr.error(
+                'Image upload failed! Are you online?',
+                'Error',
+              );
+              this.uploadCount--;
+              _.remove(this.percentages, (p) => p === progressObserver);
+              if (this.uploadCount === 0) {
+                this.readyStateChange.emit(true);
+              }
+              observer.complete();
+            });
+        });
+        this.percentages.push(progressObserver);
+      });
+      event.target.value = '';
+    }
+  }
+
+  deleteImage(index: number) {
+    const removeItem = this.postObject.images[index];
+    this.postObject.chosenImage = 0;
+    _.remove(this.postObject.images, (item) => _.isEqual(item, removeItem));
+  }
+
+  handleEvent(event: any) {
+    switch (event.name) {
+      case 'delete':
+        this.deleteImage(event.imageIndex);
+        break;
+    }
+  }
+}

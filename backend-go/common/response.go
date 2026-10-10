@@ -1,0 +1,48 @@
+package common
+
+import (
+	"encoding/json"
+	"log"
+	"net/http"
+
+	"github.com/aws/aws-lambda-go/events"
+)
+
+var corsHeaders = map[string]string{
+	"Access-Control-Allow-Origin":      "*",
+	"Access-Control-Allow-Credentials": "true",
+	"Content-Type":                     "application/json",
+}
+
+// JSON serializes a response body as JSON with the service CORS headers.
+func JSON(status int, body any) events.APIGatewayProxyResponse {
+	data, err := json.Marshal(NormalizeMongoJSON(body))
+	if err != nil {
+		log.Printf("marshal response: %v", err)
+		status = http.StatusInternalServerError
+		data = []byte(`{"success":false}`)
+	}
+	return events.APIGatewayProxyResponse{
+		StatusCode: status,
+		Headers:    corsHeaders,
+		Body:       string(data),
+	}
+}
+
+// Error returns a JSON error response with the provided status and body.
+func Error(status int, body any) events.APIGatewayProxyResponse {
+	return JSON(status, body)
+}
+
+// NotFound returns the standard JSON 404 response used by unsupported routes.
+func NotFound() events.APIGatewayProxyResponse {
+	return JSON(http.StatusNotFound, map[string]any{"success": false, "error": "Not Found"})
+}
+
+// Internal logs an optional error and returns the standard JSON 500 response.
+func Internal(body any, err error) events.APIGatewayProxyResponse {
+	if err != nil {
+		log.Printf("handler error: %v", err)
+	}
+	return JSON(http.StatusInternalServerError, body)
+}

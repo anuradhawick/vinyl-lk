@@ -1,0 +1,203 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "newProjectRoot": "projects",
+  "projects": {
+    "vinyl-lk": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "root": "",
+      "sourceRoot": "src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "outputPath": "dist/vinyl-lk",
+            "index": "src/index.html",
+            "browser": "src/main.ts",
+            "polyfills": ["zone.js"],
+            "tsConfig": "tsconfig.app.json",
+            "assets": ["src/favicon.ico", "src/assets"],
+            "styles": [
+              "src/styles.scss",
+              "src/assets/css/material-kit.css",
+              "node_modules/ngx-toastr/toastr.css"
+            ],
+            "scripts": [],
+            "allowedCommonJsDependencies": [
+              "@ckeditor/ckeditor5-build-classic",
+              "crypto-js",
+              "@aws-sdk/eventstream-marshaller",
+              "buffer",
+              "js-cookie",
+              "@aws-crypto",
+              "zen-observable",
+              "@aws-sdk/util-utf8-node",
+              "@aws-crypto/sha256-js",
+              "@aws-sdk/util-buffer-from",
+              "@aws-sdk/smithy-client",
+              "@aws-sdk/middleware-serde",
+              "@aws-sdk/middleware-user-agent",
+              "@aws-sdk/middleware-retry",
+              "@aws-sdk/middleware-signing",
+              "@aws-sdk/middleware-content-length",
+              "@aws-sdk/middleware-host-header",
+              "@aws-sdk/config-resolver",
+              "@aws-sdk/s3-request-presigner",
+              "@aws-sdk/util-format-url",
+              "@aws-sdk/util-create-request",
+              "@aws-sdk/property-provider",
+              "axios",
+              "@aws-sdk/fetch-http-handler",
+              "@aws-sdk/protocol-http",
+              "@aws-sdk/querystring-builder",
+              "@aws-sdk/util-utf8-browser",
+              "@aws-sdk/url-parser-browser",
+              "@aws-crypto/sha256-browser",
+              "@aws-sdk/url-parser-node",
+              "@aws-sdk/util-uri-escape",
+              "@aws-sdk/middleware-sdk-s3",
+              "@aws-sdk/middleware-bucket-endpoint",
+              "@aws-sdk/querystring-parser",
+              "@aws-sdk/middleware-apply-body-checksum",
+              "@aws-sdk/middleware-ssec",
+              "@aws-sdk/middleware-expect-continue",
+              "fast-xml-parser",
+              "@aws-sdk/xml-builder",
+              "@aws-sdk/md5-js",
+              "@aws-sdk/hash-blob-browser",
+              "@aws-sdk/eventstream-serde-browser",
+              "@aws-sdk/middleware-location-constraint",
+              "uuid",
+              "events",
+              "xstate/lib/waitFor.js",
+              "style-dictionary/lib/utils/deepExtend.js",
+              "style-dictionary/lib/utils/flattenProperties.js",
+              "style-dictionary/lib/utils/references/usesReference.js",
+              "cookie",
+              "@aws-sdk/credential-provider-cognito-identity",
+              "@aws-sdk/eventstream-serde-config-resolver",
+              "ulid",
+              "zen-push",
+              "lodash",
+              "@aws-amplify/core",
+              "url",
+              "@aws-crypto/crc32",
+              "isomorphic-unfetch",
+              "crypto-js/lib-typedarrays",
+              "crypto-js/hmac-sha256",
+              "crypto",
+              "camelcase-keys",
+              "xstate/lib/actions",
+              "style-dictionary/lib/utils/deepExtend",
+              "style-dictionary/lib/utils/flattenProperties",
+              "style-dictionary/lib/utils/references/usesReference",
+              "entities"
+            ],
+            "server": "src/main.server.ts",
+            "prerender": false,
+            "ssr": {
+              "entry": "server.ts"
+            }
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2500kb",
+                  "maximumError": "3mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "2kb",
+                  "maximumError": "4kb"
+                }
+              ],
+              "ssr": false,
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true,
+              "ssr": false,
+              "prerender": false,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.development.ts"
+                }
+              ]
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "configurations": {
+            "production": {
+              "buildTarget": "vinyl-lk:build:production"
+            },
+            "development": {
+              "buildTarget": "vinyl-lk:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "extract-i18n": {
+          "builder": "@angular/build:extract-i18n",
+          "options": {
+            "buildTarget": "vinyl-lk:build"
+          }
+        },
+        "test": {
+          "builder": "@angular/build:karma",
+          "options": {
+            "polyfills": ["zone.js", "zone.js/testing"],
+            "tsConfig": "tsconfig.spec.json",
+            "assets": ["src/favicon.ico", "src/assets"],
+            "styles": [
+              "src/styles.scss",
+              "src/assets/css/material-kit.css",
+              "node_modules/ngx-toastr/toastr.css"
+            ],
+            "scripts": []
+          }
+        }
+      }
+    }
+  },
+  "schematics": {
+    "@schematics/angular:component": {
+      "type": "component"
+    },
+    "@schematics/angular:directive": {
+      "type": "directive"
+    },
+    "@schematics/angular:service": {
+      "type": "service"
+    },
+    "@schematics/angular:guard": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:interceptor": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:module": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:pipe": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:resolver": {
+      "typeSeparator": "."
+    }
+  }
+}

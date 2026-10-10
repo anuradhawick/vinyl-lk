@@ -1,0 +1,37 @@
+<hr />
+<div class="container">
+  <h3>Users</h3>
+  <hr />
+  <mat-list>
+    @for (user of users(); track $index) {
+      <mat-list-item class="hover:bg-slate-100">
+        @if (user.picture) {
+          <img matListItemAvatar [src]="user.picture" alt="user avatar" />
+        } @else {
+          <img
+            matListItemAvatar
+            src="../../../assets/images/profile.png"
+            alt="Profile picture"
+          />
+        }
+        <h3 matListItemTitle>{{ user.name }}</h3>
+        <p matListItemLine>
+          {{ user.email }}
+        </p>
+      </mat-list-item>
+    }
+  </mat-list>
+  <app-loader [hidden]="!loading()"></app-loader>
+  @if (count() > limit() && !loading()) {
+    <nav aria-label="Page navigation">
+      <mat-paginator
+        class="bg-slate-50"
+        showFirstLastButtons
+        [length]="count()"
+        [pageSize]="limit()"
+        [pageIndex]="page() - 1"
+        (page)="changePage($event)"
+      ></mat-paginator>
+    </nav>
+  }
+</div>

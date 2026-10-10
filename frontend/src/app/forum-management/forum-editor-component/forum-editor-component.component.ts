@@ -1,0 +1,95 @@
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+import { v4 as uuid } from 'uuid';
+import { uploadData } from 'aws-amplify/storage';
+import { environment } from '../../../environments/environment';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  FormsModule,
+} from '@angular/forms';
+import { CKEditorModule } from '@ckeditor/ckeditor5-angular';
+
+@Component({
+  selector: 'app-forum-editor-component',
+  templateUrl: './forum-editor-component.component.html',
+  styleUrls: ['./forum-editor-component.component.css'],
+  imports: [FormsModule, CKEditorModule],
+})
+export class ForumEditorComponentComponent implements OnInit {
+  @Input() imageProgress = 0;
+  @Input() title!: any;
+  @Input() data!: any;
+  @Input() editorDisabled!: any;
+  @Input() is_reply = false;
+  @Output() imageProgressChange = new EventEmitter();
+  @Output() dataChange = new EventEmitter();
+  @Output() titleChange = new EventEmitter();
+  protected Editor = ClassicEditor;
+
+  onReady(Editor: any) {
+    Editor.plugins.get('FileRepository').createUploadAdapter = (
+      loader: any,
+    ) => {
+      return new MyUploadAdapter(loader, this);
+    };
+  }
+
+  ngOnInit() {}
+}
+
+class MyUploadAdapter {
+  constructor(
+    private loader: any,
+    private ref: ForumEditorComponentComponent,
+  ) {
+    this.loader = loader;
+    this.ref = ref;
+  }
+
+  upload() {
+    this.ref.imageProgress++;
+    this.ref.imageProgressChange.emit(this.ref.imageProgress);
+
+    return new Promise((resolve, reject) => {
+      this.loader.file.then((file: any) => {
+        const filename = `${uuid()}.${file.name.split('.').pop() || ''}`;
+        const that = this;
+
+        uploadData({
+          key: `temp/${filename}`,
+          data: file,
+          options: {
+            onProgress: (progress: any) => {
+              that.loader.uploadTotal = progress.totalBytes;
+              that.loader.uploaded = progress.transferredBytes;
+            },
+          },
+        })
+          .result.then(() => {
+            this.ref.imageProgress--;
+            this.ref.imageProgressChange.emit(this.ref.imageProgress);
+
+            resolve({
+              default: `${environment.cdn_url}temp/${filename}`,
+            });
+          })
+          .catch((e: any) => {
+            this.ref.imageProgress--;
+            this.ref.imageProgressChange.emit(this.ref.imageProgress);
+
+            reject(e);
+          });
+      });
+    });
+  }
+
+  abort() {
+    // if (this.task != null) {
+    //   this.task.cancel();
+    this.ref.imageProgress--;
+    this.ref.imageProgressChange.emit(this.ref.imageProgress);
+    // }
+  }
+}

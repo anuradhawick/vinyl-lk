@@ -1,0 +1,24 @@
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { AdminActionConfirmModalComponent } from './admin-action-confirm-modal.component';
+
+describe('AdminActionConfirmModalComponent', () => {
+  let component: AdminActionConfirmModalComponent;
+  let fixture: ComponentFixture<AdminActionConfirmModalComponent>;
+
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      imports: [AdminActionConfirmModalComponent],
+    }).compileComponents();
+  }));
+
+  beforeEach(() => {
+    fixture = TestBed.createComponent(AdminActionConfirmModalComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});

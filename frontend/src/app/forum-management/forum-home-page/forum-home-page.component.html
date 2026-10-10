@@ -1,0 +1,124 @@
+<br />
+<!--Search-->
+<div class="p-2 flex justify-between flex-wrap">
+  <div class="flex flex-wrap w-full">
+    <mat-form-field class="grow max-w-md" style="height: 60px">
+      <input
+        matInput
+        class="-translate-y-[10px]"
+        (focus)="autocompleteShow.set(true)"
+        (blur)="exitSearch()"
+        (keyup)="autocompleteEvent.next($any($event).target.value)"
+        type="text"
+        placeholder="Search forum..."
+        name="search-query"
+        [ngModel]="query()"
+        (ngModelChange)="query.set($event)"
+      />
+    </mat-form-field>
+    <div class="flex justify-start gap-1 md:justify-between grow">
+      <button
+        class="md:ml-2"
+        mat-raised-button
+        color="primary"
+        (click)="search()"
+      >
+        Search
+      </button>
+      <button mat-raised-button color="primary" routerLink="/forum/new">
+        New
+      </button>
+    </div>
+    @if (autocompleteShow() && autocompleteResult()?.posts?.length > 0) {
+      <div
+        class="z-10 p-2 max-w-md absolute top-[76px] left-2 right-2 bg-white border-solid border-slate-400 border-2 rounded-md overflow-hidden"
+      >
+        <table class="w-full">
+          <tbody>
+            @for (post of autocompleteResult()?.posts; track post) {
+              <tr>
+                <td>
+                  <a [routerLink]="['/forum', post.id, 'view']">
+                    <strong>{{
+                      _.truncate(post.postTitle, { length: 60 })
+                    }}</strong>
+                    <br />
+                    <em> posted on: {{ post.createdAt | date: "medium" }} </em>
+                  </a>
+                  @if (!$last) {
+                    <hr />
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>
+<!--End Search-->
+@if (
+  !loading() && !_.isEmpty(_.trim(_.get(route.queryParams | async, "query")))
+) {
+  <div class="ml-5 mr-5 mt-1 mb-2 text-dark">
+    Search results for -
+    <em>{{ _.truncate(query(), { length: 100 }) }}</em>
+    (<a [routerLink]="['/forum']">cancel</a>)
+  </div>
+}
+<div class="flex flex-col md:flex-row">
+  <div class="w-full md:w-1/4 p-2">
+    <mat-card>
+      <mat-card-content>
+        <h4 class="font-medium">Welcome to our forum!</h4>
+        <hr />
+        <p class="font-normal">
+          This is your arena for technical and general discussions. We have
+          enabled comment facility to provide a better user experience. Stay
+          tuned for more features soon!.
+        </p>
+        <p class="font-extralight">Be constructive, respectful and positive.</p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+  <div class="w-full md:w-3/4 p-2">
+    @if (loading()) {
+      <app-loader [loading]="true"></app-loader>
+    } @else {
+      <mat-card>
+        <mat-card-content>
+          <mat-list class="p-0">
+            @for (post of posts(); track post) {
+              <mat-list-item
+                role="listitem"
+                [routerLink]="[post.id, 'view']"
+                class="hover:bg-slate-100"
+                style="cursor: pointer !important"
+              >
+                <img
+                  matListItemAvatar
+                  src="/assets/images/records-new-sample.svg"
+                />
+                <h3 matListItemTitle>{{ post.postTitle }}</h3>
+                <p matListItemLine>
+                  posted on: {{ post.createdAt | date: "medium" }}
+                </p>
+              </mat-list-item>
+            }
+          </mat-list>
+        </mat-card-content>
+      </mat-card>
+      <nav>
+        <mat-paginator
+          class="bg-slate-50"
+          showFirstLastButtons
+          [length]="count()"
+          [pageSize]="limit()"
+          [pageIndex]="page() - 1"
+          (page)="changePage($event)"
+        ></mat-paginator>
+      </nav>
+    }
+  </div>
+</div>

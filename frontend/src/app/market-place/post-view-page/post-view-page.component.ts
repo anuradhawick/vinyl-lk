@@ -1,0 +1,102 @@
+import { Component, OnInit, signal } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
+import { ActivatedRoute } from '@angular/router';
+import { MarketService } from '../services/market.service';
+import { AuthService } from '../../shared/services/auth.service';
+import * as _ from 'lodash';
+import { ReportModalComponent } from '../modals/report-modal/report-modal.component';
+import { MatDialog } from '@angular/material/dialog';
+import { ToastrService } from 'ngx-toastr';
+import { LoaderComponent } from '../../shared/components/loader/loader.component';
+import { ImageViewerComponent } from '../../shared/components/image-viewer/image-viewer.component';
+import { MatIcon } from '@angular/material/icon';
+
+@Component({
+  selector: 'app-post-view-page',
+  templateUrl: './post-view-page.component.html',
+  styleUrls: ['./post-view-page.component.css'],
+  imports: [LoaderComponent, ImageViewerComponent, MatIcon],
+})
+export class PostViewPageComponent implements OnInit {
+  public _ = _;
+  public postObject = signal<any>(null);
+  public recordHistory: any = null;
+  public imgvconfig = {
+    zoomFactor: 0.1,
+    wheelZoom: true,
+    allowFullscreen: true,
+    allowKeyboardNavigation: true,
+    customBtns: [],
+    btnShow: {
+      next: true,
+      prev: true,
+      zoomIn: true,
+      zoomOut: true,
+    },
+  };
+
+  public typeMap: any = {
+    material: 'A/V Material',
+    gear: 'A/V Gear',
+  };
+
+  public subTypeMap: any = {
+    material: {
+      phonograph: 'Phonograph Records',
+      magnetic: 'Magnetic Tapes',
+      compact: 'Compact Discs',
+      digital: 'Digital Material',
+      other: 'Other',
+    },
+    gear: {
+      amplifiers: 'Amplifiers',
+      'pre-amplifiers': 'Pre Amplifiers',
+      speakers: 'Speakers',
+      equalizers: 'Equalizers',
+      mixers: 'Mixers',
+      tape: 'Tape Gear',
+      vinyl: 'Vinyl Gear',
+      audio: 'Audio Accessories',
+      video: 'Video Gear',
+      digital: 'Digital Gear',
+      other: 'Other',
+    },
+  };
+
+  // context control
+  public postLoading = signal(true);
+
+  constructor(
+    public route: ActivatedRoute,
+    private marketService: MarketService,
+    public auth: AuthService,
+    private toastr: ToastrService,
+    public dialog: MatDialog,
+  ) {}
+
+  ngOnInit() {
+    this.route.paramMap.subscribe((map: any) => {
+      const postId = _.get(map, 'params.postId', null);
+      firstValueFrom(this.marketService.fetch_post(postId)).then((data) => {
+        this.postObject.set(data);
+        this.postLoading.set(false);
+      });
+    });
+  }
+
+  async report() {
+    const dialogRef = this.dialog.open(ReportModalComponent, {
+      width: '50%',
+      data: { reason: 'Item already sold' },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (!_.isEmpty(result)) {
+        this.marketService.report_post(this.postObject().id, {
+          description: result,
+        });
+        this.toastr.success(`Records saved successfully`, 'Success');
+      }
+    });
+  }
+}

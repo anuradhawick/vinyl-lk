@@ -1,89 +1,38 @@
-# Vinyl.LK
+# Backend
 
-Angular and AWS Lambda project of Vinyl.LK 
+### Terraform Workspaces
 
-## Development server
+Deployments are of two types
 
-```
-# ui at port 4200
-ng serve
+* `dev` - use for development deployments
+* `prod` - use for production deployments
 
-# serverless offline
-cd lambda
-node offline-serverless.js
+Backend Terraform applies also create the MongoDB indexes with `mongosh`, using the workspace-selected `MONGODB_ATLAS_CLUSTER_URI` and `MONGODB_DATABASE_NAME`; the machine running `terraform apply` must have `mongosh` installed.
 
-#OR
-cd lambda
-npm start
+### Node modules
 
-```
+* Use `npm` for package management
+* Exclude `aws-sdk` from esbuilds
 
-## Development SSR
+# Frontend
 
-```
-npm run serve:ssr
-```
+Only one form of deployments are performed
 
-## Deployment of Angular
+* `prod` - for production deployment
 
-```
-npm run build:deploy:prod
-```
+Note - frontend shall not be deployed for testing
 
-## Deployment of Backend Lambdas
+* Development can take place locally and does not require having a separate cloudfront distribution.
 
-```
-serverless deploy --stage prod --service <SERVICE FOLDER>
-```
+### Node modules
 
-## Environment Variables Angular
+* Use `pnpm` for faster resolutions
 
+# General Practice
 
-File `./src/environment/environment.prod.ts` or `./src/environment/environment.ts`
+* Use `prettier` for formatting code
 
-```js
-export const environment = {
-  production: false,
-  aws_config: {
-    Auth: {
-      identityPoolId: '',
-      region: '',
-      userPoolId: '',
-      userPoolWebClientId: '',
-      mandatorySignIn: false,
-      oauth: {
-        domain: '',
-        scope: ['phone', 'email', 'profile', 'openid', 'aws.cognito.signin.user.admin'],
-        redirectSignIn: 'http://localhost:4200/',
-        redirectSignOut: 'http://localhost:4200/',
-        responseType: 'code',
-        code_challenge: null
-      },
-    },
-    Storage: {
-      AWSS3: {
-        bucket: '',
-        region: '',
-      }
-    }
-  },
-  api_gateway: ''
-};
-```
+# API Tooling
 
-## Environment Variables for Backend Lambdas
-
-These variables are shared with the SSR lambda for Angular app.
-
-```yaml
-config:
-  service: 
-  region: 
-  userpool_authorizer_arn: arn:
-  user_pool_id: 
-env:
-  MONGODB_ATLAS_CLUSTER_URI: mongodb://localhost:27017
-  BUCKET_NAME: 
-  BUCKET_REGION: 
-
-```
+* Import `postman/vinyl-search-api.postman_collection.json` into Postman to exercise the `backend-go` API routes.
+* Set the collection variables `authToken` and `adminToken` before running authenticated requests.
