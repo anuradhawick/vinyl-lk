@@ -24,7 +24,7 @@
     "@angular/platform-browser-dynamic": "^21.2.0",
     "@angular/platform-server": "^21.2.0",
     "@angular/router": "^21.2.0",
-    "@angular/ssr": "^21.2.0",
+    "@angular/ssr": "^21.2.23",
     "@ckeditor/ckeditor5-angular": "^6.0.1",
     "@ckeditor/ckeditor5-build-classic": "^38.1.1",
     "@tailwindcss/postcss": "^4.1.13",
